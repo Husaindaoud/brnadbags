@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+*.pyo
+.env
+app/fashion_store.db
+app/uploads/
+.git

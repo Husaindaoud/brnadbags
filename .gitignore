@@ -1,0 +1,34 @@
+# Environment variables — never commit these
+.env
+.env.*
+./backend/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Uploads (user-uploaded files, not source code)
+backend/app/uploads/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+frontend/dist/
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
