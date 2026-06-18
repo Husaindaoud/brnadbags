@@ -11,6 +11,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Debug: log all responses
+api.interceptors.response.use((response) => {
+  console.log('[API]', response.config.url, typeof response.data, Array.isArray(response.data) ? 'array' : response.data);
+  return response;
+});
+
 export default api;
 
 export const getImageUrl = (url) => {
