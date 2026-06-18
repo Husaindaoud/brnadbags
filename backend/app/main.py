@@ -25,10 +25,11 @@ app = FastAPI(
 )
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
+_extra = [u.strip() for u in settings.frontend_url.split(",") if u.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        settings.frontend_url,
+        *_extra,
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:5174",
@@ -36,6 +37,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
     ],
+    allow_origin_regex=r"https://brnadbags.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
