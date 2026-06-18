@@ -10,5 +10,6 @@ class Announcement(Base):
     title = Column(String, nullable=False)
     message = Column(String, nullable=False)
     type = Column(String, default="discount")  # "discount" | "new_collection"
+    bg_color = Column(String, default="#6B7C45")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

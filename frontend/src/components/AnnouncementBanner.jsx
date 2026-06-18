@@ -3,6 +3,7 @@ import { announcementsApi } from '../services/api';
 
 export default function AnnouncementBanner() {
   const [items, setItems] = useState([]);
+  const [bgColor, setBgColor] = useState('#6B7C45');
   const [dismissed, setDismissed] = useState(
     () => !!sessionStorage.getItem('ann_bar_dismissed')
   );
@@ -11,6 +12,7 @@ export default function AnnouncementBanner() {
     if (dismissed) return;
     announcementsApi.active().then(list => {
       if (list.length > 0) {
+        setBgColor(list[0].bg_color || '#6B7C45');
         setItems(list.map(a => (a.message ? `${a.title}  —  ${a.message}` : a.title)));
       }
     }).catch(() => {});
@@ -18,13 +20,12 @@ export default function AnnouncementBanner() {
 
   if (!items.length || dismissed) return null;
 
-  // Duplicate for seamless loop: animation moves -50% then repeats
   const track = [...items, ...items];
 
   return (
     <div
       className="text-white flex items-center overflow-hidden"
-      style={{ background: '#b8966a', height: '36px' }}
+      style={{ background: bgColor, height: '36px' }}
     >
       <div className="flex-1 overflow-hidden">
         <div

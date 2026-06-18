@@ -78,6 +78,11 @@ def _migrate(engine):
             conn.execute(text("ALTER TABLE site_settings ADD COLUMN favicon_url VARCHAR"))
             conn.commit()
 
+        ann_cols = {c["name"] for c in inspector.get_columns("announcements")}
+        if "bg_color" not in ann_cols:
+            conn.execute(text("ALTER TABLE announcements ADD COLUMN bg_color VARCHAR DEFAULT '#6B7C45'"))
+            conn.commit()
+
 
 def _seed(db: Session):
     try:

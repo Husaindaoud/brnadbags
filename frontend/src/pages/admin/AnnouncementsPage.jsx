@@ -6,8 +6,19 @@ import { announcementsApi } from '../../services/api';
 import Modal from '../../components/admin/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
+const COLOR_SWATCHES = [
+  { label: 'Olive',      value: '#6B7C45' },
+  { label: 'Gold',       value: '#b8966a' },
+  { label: 'Black',      value: '#1a1a1a' },
+  { label: 'Blush',      value: '#c9748a' },
+  { label: 'Terracotta', value: '#b55d3e' },
+  { label: 'Navy',       value: '#2c3e6b' },
+  { label: 'Forest',     value: '#2e5a3e' },
+  { label: 'Mauve',      value: '#7a5c6e' },
+];
+
 function AnnouncementForm({ onSave, onCancel }) {
-  const [form, setForm] = useState({ title: '', message: '', type: 'discount', is_active: true });
+  const [form, setForm] = useState({ title: '', message: '', type: 'discount', bg_color: '#6B7C45', is_active: true });
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -41,6 +52,26 @@ function AnnouncementForm({ onSave, onCancel }) {
           <option value="discount">Discount</option>
           <option value="new_collection">New Collection</option>
         </select>
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-stone-600 mb-1.5">Banner Color</label>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {COLOR_SWATCHES.map(s => (
+            <button key={s.value} type="button" title={s.label}
+              onClick={() => setForm(f => ({ ...f, bg_color: s.value }))}
+              className="w-7 h-7 rounded-full border-2 transition-all"
+              style={{ background: s.value, borderColor: form.bg_color === s.value ? '#1a1a1a' : 'transparent', outline: form.bg_color === s.value ? '2px solid #1a1a1a' : 'none', outlineOffset: '2px' }}
+            />
+          ))}
+          <input type="color" value={form.bg_color}
+            onChange={e => setForm(f => ({ ...f, bg_color: e.target.value }))}
+            className="w-7 h-7 rounded-full cursor-pointer border border-stone-200"
+            title="Custom color" />
+        </div>
+        <div className="h-7 rounded-lg flex items-center justify-center text-white text-xs font-medium tracking-widest uppercase"
+          style={{ background: form.bg_color }}>
+          Preview
+        </div>
       </div>
       <label className="flex items-center gap-3 cursor-pointer">
         <div className={`w-10 h-6 rounded-full transition-colors relative ${form.is_active ? 'bg-rose-500' : 'bg-stone-200'}`}
@@ -109,6 +140,7 @@ export default function AnnouncementsPage() {
               className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 flex items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="w-3.5 h-3.5 rounded-full shrink-0 border border-stone-200" style={{ background: ann.bg_color || '#6B7C45' }} />
                   <span className="font-semibold text-stone-800 text-sm">{ann.title}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ann.type === 'discount' ? 'bg-rose-50 text-rose-600' : 'bg-stone-100 text-stone-600'}`}>
                     {typeLabel[ann.type] || ann.type}
