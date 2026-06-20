@@ -10,3 +10,5 @@ class SiteSettings(Base):
     favicon_url = Column(String, nullable=True)
     whatsapp_number = Column(String, nullable=True)
     instagram_url = Column(String, nullable=True)
+    footer_description = Column(String, nullable=True)
+    notification_emails = Column(String, nullable=True)

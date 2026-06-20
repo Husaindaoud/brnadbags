@@ -7,14 +7,54 @@ import Modal from '../../components/admin/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const COLOR_SWATCHES = [
-  { label: 'Olive',      value: '#6B7C45' },
-  { label: 'Gold',       value: '#b8966a' },
-  { label: 'Black',      value: '#1a1a1a' },
-  { label: 'Blush',      value: '#c9748a' },
-  { label: 'Terracotta', value: '#b55d3e' },
-  { label: 'Navy',       value: '#2c3e6b' },
-  { label: 'Forest',     value: '#2e5a3e' },
-  { label: 'Mauve',      value: '#7a5c6e' },
+  // Neutrals
+  { label: 'Black',       value: '#1a1a1a' },
+  { label: 'Charcoal',    value: '#3d3d3d' },
+  { label: 'Dark Grey',   value: '#6b6b6b' },
+  { label: 'Grey',        value: '#9e9e9e' },
+  { label: 'Silver',      value: '#c0c0c0' },
+  { label: 'White',       value: '#f5f5f5' },
+  // Warm
+  { label: 'Cream',       value: '#f5f0e8' },
+  { label: 'Beige',       value: '#d4b896' },
+  { label: 'Gold',        value: '#b8966a' },
+  { label: 'Amber',       value: '#c8860a' },
+  { label: 'Orange',      value: '#e07332' },
+  { label: 'Terracotta',  value: '#b55d3e' },
+  { label: 'Rust',        value: '#8b3a2a' },
+  { label: 'Red',         value: '#c0392b' },
+  { label: 'Crimson',     value: '#8b0000' },
+  { label: 'Burgundy',    value: '#6d1a2a' },
+  // Pink & Rose
+  { label: 'Blush',       value: '#c9748a' },
+  { label: 'Rose',        value: '#d4607a' },
+  { label: 'Hot Pink',    value: '#c2185b' },
+  { label: 'Mauve',       value: '#7a5c6e' },
+  { label: 'Lavender',    value: '#9b7ec8' },
+  // Purple
+  { label: 'Plum',        value: '#6a1b4d' },
+  { label: 'Purple',      value: '#7b2d8b' },
+  { label: 'Violet',      value: '#5c35a0' },
+  { label: 'Indigo',      value: '#3d3580' },
+  // Blue
+  { label: 'Navy',        value: '#2c3e6b' },
+  { label: 'Royal Blue',  value: '#2355b5' },
+  { label: 'Blue',        value: '#1976d2' },
+  { label: 'Sky Blue',    value: '#0288d1' },
+  { label: 'Teal',        value: '#00796b' },
+  { label: 'Cyan',        value: '#0097a7' },
+  // Green
+  { label: 'Forest',      value: '#2e5a3e' },
+  { label: 'Dark Green',  value: '#1b5e20' },
+  { label: 'Green',       value: '#388e3c' },
+  { label: 'Olive',       value: '#6B7C45' },
+  { label: 'Sage',        value: '#7d9b76' },
+  { label: 'Mint',        value: '#4caf7d' },
+  // Brown
+  { label: 'Dark Brown',  value: '#3e2723' },
+  { label: 'Brown',       value: '#5d4037' },
+  { label: 'Mocha',       value: '#795548' },
+  { label: 'Camel',       value: '#9e7a4a' },
 ];
 
 function AnnouncementForm({ onSave, onCancel }) {

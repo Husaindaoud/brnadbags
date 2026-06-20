@@ -4,8 +4,10 @@ from typing import List
 
 from ..core.database import get_db
 from ..core.security import get_current_admin
+from ..core.email import send_order_notification
 from ..models.order import Order, OrderItem, _gen_ref
 from ..models.product import Product
+from ..models.site_settings import SiteSettings
 from ..schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 
 router = APIRouter(prefix='/orders', tags=['Orders'])
@@ -67,6 +69,11 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(order)
+
+    site = db.query(SiteSettings).first()
+    if site and site.notification_emails:
+        send_order_notification(order, site.notification_emails)
+
     return order
 
 

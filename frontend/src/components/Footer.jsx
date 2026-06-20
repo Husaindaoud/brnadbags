@@ -20,7 +20,7 @@ export default function Footer() {
               <span className="font-display text-2xl font-bold text-stone-900 block mb-4">Boutique</span>
             )}
             <p className="text-sm leading-relaxed text-stone-500">
-              Curated fashion for the modern woman. Browse, fall in love, inquire via WhatsApp.
+              {settings?.footer_description || 'Curated fashion for the modern woman. Browse, fall in love, inquire via WhatsApp.'}
             </p>
           </div>
 

@@ -13,6 +13,9 @@ class Settings(BaseSettings):
 
     frontend_url: str = "http://localhost:5173"
 
+    resend_api_key: str = ""
+    email_from: str = "orders@brandbagsandmore.com"
+
     class Config:
         env_file = ".env"
 

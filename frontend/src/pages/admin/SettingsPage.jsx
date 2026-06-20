@@ -5,7 +5,7 @@ import { settingsApi } from '../../services/api';
 import ImageUploadField from '../../components/admin/ImageUploadField';
 
 export default function SettingsPage() {
-  const [form, setForm] = useState({ whatsapp_number: '', instagram_url: '' });
+  const [form, setForm] = useState({ whatsapp_number: '', instagram_url: '', footer_description: '', notification_emails: '' });
   const [logoFile, setLogoFile] = useState(null);
   const [faviconFile, setFaviconFile] = useState(null);
   const [settings, setSettings] = useState(null);
@@ -14,7 +14,7 @@ export default function SettingsPage() {
   useEffect(() => {
     settingsApi.get().then(s => {
       setSettings(s);
-      setForm({ whatsapp_number: s.whatsapp_number || '', instagram_url: s.instagram_url || '' });
+      setForm({ whatsapp_number: s.whatsapp_number || '', instagram_url: s.instagram_url || '', footer_description: s.footer_description || '', notification_emails: s.notification_emails || '' });
     });
   }, []);
 
@@ -116,6 +116,30 @@ export default function SettingsPage() {
             onChange={e => setForm(f => ({ ...f, instagram_url: e.target.value }))}
             className="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-1.5">Footer Description</label>
+          <textarea
+            rows={3}
+            placeholder="Curated fashion for the modern woman..."
+            value={form.footer_description}
+            onChange={e => setForm(f => ({ ...f, footer_description: e.target.value }))}
+            className="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+          />
+          <p className="text-xs text-stone-400 mt-1">Shown in the footer below your logo.</p>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-1.5">Order Notification Emails</label>
+          <textarea
+            rows={3}
+            placeholder="admin@example.com, manager@example.com"
+            value={form.notification_emails}
+            onChange={e => setForm(f => ({ ...f, notification_emails: e.target.value }))}
+            className="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+          />
+          <p className="text-xs text-stone-400 mt-1">Separate multiple emails with commas. An email is sent when a new order is placed.</p>
         </div>
 
         <button

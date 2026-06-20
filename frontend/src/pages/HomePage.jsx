@@ -91,11 +91,12 @@ export default function HomePage() {
         >
           {slides.map(slide => (
             <SwiperSlide key={slide.id}>
-              <div className="relative bg-stone-100 overflow-hidden" style={{ aspectRatio: '16/6' }}>
+              <div className="relative bg-stone-100 w-full flex items-center justify-center" style={{ minHeight: '320px', maxHeight: '85vh' }}>
                 <img
                   src={getImageUrl(slide.image_url)}
                   alt={slide.caption || 'Slide'}
-                  className="w-full h-full object-cover"
+                  className="w-full"
+                  style={{ maxHeight: '85vh', objectFit: 'contain', display: 'block' }}
                 />
                 {(slide.caption || slide.link) && (
                   <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 sm:pb-14 px-4 text-center"

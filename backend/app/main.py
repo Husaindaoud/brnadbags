@@ -83,6 +83,14 @@ def _migrate(engine):
             conn.execute(text("ALTER TABLE announcements ADD COLUMN bg_color VARCHAR DEFAULT '#6B7C45'"))
             conn.commit()
 
+        ss_cols = {c["name"] for c in inspector.get_columns("site_settings")}
+        if "footer_description" not in ss_cols:
+            conn.execute(text("ALTER TABLE site_settings ADD COLUMN footer_description VARCHAR"))
+            conn.commit()
+        if "notification_emails" not in ss_cols:
+            conn.execute(text("ALTER TABLE site_settings ADD COLUMN notification_emails VARCHAR"))
+            conn.commit()
+
 
 def _seed(db: Session):
     try:
