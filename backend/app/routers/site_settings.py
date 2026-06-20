@@ -1,16 +1,13 @@
-import os
-import uuid
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from ..core.database import get_db
 from ..core.security import get_current_admin
+from ..core.utils import save_upload, delete_upload, ALLOWED_IMAGE_TYPES, ALLOWED_FAVICON_TYPES
 from ..models.site_settings import SiteSettings
 from ..models.user import AdminUser
 from ..schemas.site_settings import SiteSettingsOut, SiteSettingsUpdate
 
 router = APIRouter(prefix="/settings", tags=["Site Settings"])
-
-UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
 
 
 def _get_or_create_settings(db: Session) -> SiteSettings:
@@ -42,6 +39,21 @@ def update_settings(
     return settings
 
 
+@router.post("/logo", response_model=SiteSettingsOut)
+async def upload_logo(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    settings = _get_or_create_settings(db)
+    if settings.logo_url:
+        delete_upload(settings.logo_url)
+    settings.logo_url = await save_upload(file, prefix="logo", allowed_types=ALLOWED_IMAGE_TYPES)
+    db.commit()
+    db.refresh(settings)
+    return settings
+
+
 @router.delete("/logo", response_model=SiteSettingsOut)
 def delete_logo(
     db: Session = Depends(get_db),
@@ -49,9 +61,7 @@ def delete_logo(
 ):
     settings = _get_or_create_settings(db)
     if settings.logo_url:
-        filepath = os.path.join(UPLOADS_DIR, os.path.basename(settings.logo_url))
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        delete_upload(settings.logo_url)
         settings.logo_url = None
         db.commit()
         db.refresh(settings)
@@ -64,25 +74,10 @@ async def upload_favicon(
     db: Session = Depends(get_db),
     _: AdminUser = Depends(get_current_admin),
 ):
-    allowed = {"image/jpeg", "image/png", "image/webp", "image/x-icon", "image/vnd.microsoft.icon"}
-    if file.content_type not in allowed:
-        raise HTTPException(status_code=400, detail="Invalid image type")
-
-    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "ico"
-    filename = f"favicon_{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(UPLOADS_DIR, filename)
-
-    os.makedirs(UPLOADS_DIR, exist_ok=True)
-    content = await file.read()
-    with open(filepath, "wb") as f:
-        f.write(content)
-
     settings = _get_or_create_settings(db)
     if settings.favicon_url:
-        old = os.path.join(UPLOADS_DIR, os.path.basename(settings.favicon_url))
-        if os.path.exists(old):
-            os.remove(old)
-    settings.favicon_url = f"/uploads/{filename}"
+        delete_upload(settings.favicon_url)
+    settings.favicon_url = await save_upload(file, prefix="favicon", allowed_types=ALLOWED_FAVICON_TYPES)
     db.commit()
     db.refresh(settings)
     return settings
@@ -95,36 +90,8 @@ def delete_favicon(
 ):
     settings = _get_or_create_settings(db)
     if settings.favicon_url:
-        filepath = os.path.join(UPLOADS_DIR, os.path.basename(settings.favicon_url))
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        delete_upload(settings.favicon_url)
         settings.favicon_url = None
         db.commit()
         db.refresh(settings)
-    return settings
-
-
-@router.post("/logo", response_model=SiteSettingsOut)
-async def upload_logo(
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    _: AdminUser = Depends(get_current_admin),
-):
-    allowed = {"image/jpeg", "image/png", "image/webp", "image/gif"}
-    if file.content_type not in allowed:
-        raise HTTPException(status_code=400, detail="Invalid image type")
-
-    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
-    filename = f"logo_{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(UPLOADS_DIR, filename)
-
-    os.makedirs(UPLOADS_DIR, exist_ok=True)
-    content = await file.read()
-    with open(filepath, "wb") as f:
-        f.write(content)
-
-    settings = _get_or_create_settings(db)
-    settings.logo_url = f"/uploads/{filename}"
-    db.commit()
-    db.refresh(settings)
     return settings

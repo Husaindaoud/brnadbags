@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "orders@brandbagsandmore.com"
 
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = ""
+    r2_public_url: str = ""
+
     class Config:
         env_file = ".env"
 
