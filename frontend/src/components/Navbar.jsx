@@ -114,9 +114,6 @@ export default function Navbar() {
           borderBottom: scrolled ? 'none' : '1px solid #e8e3db',
         }}
       >
-        {/* Gold accent line at top of navbar */}
-        <div style={{ height: '2px', background: `linear-gradient(90deg, transparent, ${BRAND}, transparent)` }} />
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between" style={{ height: '76px' }}>
 

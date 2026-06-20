@@ -7,6 +7,8 @@ import Modal from '../../components/admin/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const COLOR_SWATCHES = [
+  // Brand
+  { label: 'Brand Olive', value: '#7A7850' },
   // Neutrals
   { label: 'Black',       value: '#1a1a1a' },
   { label: 'Charcoal',    value: '#3d3d3d' },
