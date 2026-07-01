@@ -7,3 +7,4 @@ from .product import Product, ProductImage
 from .slider import SliderImage
 from .announcement import Announcement
 from .order import Order, OrderItem
+from .promo_code import PromoCode

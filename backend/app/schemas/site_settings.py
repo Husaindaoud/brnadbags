@@ -8,6 +8,7 @@ class SiteSettingsOut(BaseModel):
     favicon_url: Optional[str] = None
     whatsapp_number: Optional[str] = None
     instagram_url: Optional[str] = None
+    site_title: Optional[str] = None
     footer_description: Optional[str] = None
     notification_emails: Optional[str] = None
 
@@ -17,5 +18,6 @@ class SiteSettingsOut(BaseModel):
 class SiteSettingsUpdate(BaseModel):
     whatsapp_number: Optional[str] = None
     instagram_url: Optional[str] = None
+    site_title: Optional[str] = None
     footer_description: Optional[str] = None
     notification_emails: Optional[str] = None

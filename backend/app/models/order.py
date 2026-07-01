@@ -30,9 +30,11 @@ class Order(Base):
     email         = Column(String, nullable=True)
     order_notes   = Column(Text, nullable=True)
 
-    subtotal    = Column(Float, nullable=False)
-    total       = Column(Float, nullable=False)
-    created_at  = Column(DateTime, default=datetime.utcnow)
+    subtotal        = Column(Float, nullable=False)
+    discount_amount = Column(Float, nullable=True, default=0.0)
+    promo_code      = Column(String, nullable=True)
+    total           = Column(Float, nullable=False)
+    created_at      = Column(DateTime, default=datetime.utcnow)
 
     items = relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
 

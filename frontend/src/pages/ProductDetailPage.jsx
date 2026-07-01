@@ -96,13 +96,9 @@ export default function ProductDetailPage() {
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-500 bg-stone-100 px-3 py-1.5 rounded-full">
                 Sold Out
               </span>
-            ) : product.quantity <= 5 ? (
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full">
-                Only {product.quantity} left in stock
-              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full">
-                ✓ Available — {product.quantity} in stock
+                ✓ Available
               </span>
             )}
           </div>

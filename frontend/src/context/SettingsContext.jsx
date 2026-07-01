@@ -24,6 +24,10 @@ export function SettingsProvider({ children }) {
     applyFavicon(settings.favicon_url ? getImageUrl(settings.favicon_url) : null);
   }, [settings.favicon_url]);
 
+  useEffect(() => {
+    if (settings.site_title) document.title = settings.site_title;
+  }, [settings.site_title]);
+
   return (
     <SettingsContext.Provider value={{ settings, setSettings }}>
       {children}

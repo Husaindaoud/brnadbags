@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { ordersApi, getImageUrl } from '../services/api';
+import { ordersApi, promoApi, getImageUrl } from '../services/api';
 
 const BRAND = '#b8966a';
 
@@ -49,6 +49,12 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const [promoInput, setPromoInput] = useState('');
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoMsg, setPromoMsg] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [checkingPromo, setCheckingPromo] = useState(false);
+
   const [form, setForm] = useState({
     first_name: '', last_name: '', company_name: '',
     country: 'Lebanon', street_address: '', apartment: '',
@@ -69,6 +75,38 @@ export default function CheckoutPage() {
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
+  const discountAmount = promoApplied ? +(totalPrice * promoDiscount / 100).toFixed(2) : 0;
+  const finalTotal = +(totalPrice - discountAmount).toFixed(2);
+
+  const applyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setCheckingPromo(true);
+    setPromoMsg('');
+    try {
+      const result = await promoApi.validate(promoInput.trim());
+      if (result.valid) {
+        setPromoDiscount(result.discount_percent);
+        setPromoApplied(true);
+        setPromoMsg(result.message);
+      } else {
+        setPromoApplied(false);
+        setPromoDiscount(0);
+        setPromoMsg(result.message);
+      }
+    } catch {
+      setPromoMsg('Failed to validate promo code.');
+    } finally {
+      setCheckingPromo(false);
+    }
+  };
+
+  const removePromo = () => {
+    setPromoInput('');
+    setPromoDiscount(0);
+    setPromoApplied(false);
+    setPromoMsg('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -81,7 +119,11 @@ export default function CheckoutPage() {
         price: product.final_price,
         quantity,
       }));
-      const order = await ordersApi.create({ ...form, items: orderItems });
+      const order = await ordersApi.create({
+        ...form,
+        items: orderItems,
+        promo_code: promoApplied ? promoInput.trim() : null,
+      });
       clearCart();
       navigate(`/order-confirmed/${order.order_ref}`);
     } catch {
@@ -209,18 +251,64 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Promo code */}
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0ece6' }}>
+                <p style={{ fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: '#1a1a1a', marginBottom: '10px' }}>
+                  Promo Code
+                </p>
+                {promoApplied ? (
+                  <div className="flex items-center justify-between" style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: '8px 12px' }}>
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#15803d', letterSpacing: '0.06em' }}>{promoInput.toUpperCase()}</span>
+                      <span style={{ fontSize: '11px', color: '#15803d', marginLeft: '8px' }}>−{promoDiscount}% off</span>
+                    </div>
+                    <button onClick={removePromo} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: '#78716c', textDecoration: 'underline' }}>
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={promoInput}
+                      onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoMsg(''); }}
+                      onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), applyPromo())}
+                      placeholder="Enter code"
+                      style={{ flex: 1, padding: '8px 10px', border: '1px solid #d6d0c8', fontSize: '12px', outline: 'none', letterSpacing: '0.06em' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={applyPromo}
+                      disabled={checkingPromo || !promoInput.trim()}
+                      style={{ padding: '8px 14px', background: checkingPromo || !promoInput.trim() ? '#e0d5c8' : BRAND, color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: checkingPromo || !promoInput.trim() ? 'not-allowed' : 'pointer' }}
+                    >
+                      {checkingPromo ? '…' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+                {promoMsg && !promoApplied && (
+                  <p style={{ fontSize: '11px', color: '#dc2626', marginTop: '6px' }}>{promoMsg}</p>
+                )}
+              </div>
+
+              {/* Totals */}
               <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0ece6' }}>
                 <div className="flex justify-between mb-2">
                   <span style={{ fontSize: '11px', color: '#78716c', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Subtotal</span>
                   <span style={{ fontSize: '12px', fontWeight: 600 }}>${totalPrice.toFixed(2)}</span>
                 </div>
+                {promoApplied && (
+                  <div className="flex justify-between mb-2">
+                    <span style={{ fontSize: '11px', color: '#15803d', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Discount ({promoDiscount}%)</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#15803d' }}>−${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between mb-2">
                   <span style={{ fontSize: '11px', color: '#78716c', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Shipping</span>
                   <span style={{ fontSize: '11px', color: '#78716c' }}>Calculated at delivery</span>
                 </div>
                 <div className="flex justify-between mt-3 pt-3" style={{ borderTop: '1px solid #e8e3db' }}>
                   <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Total</span>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: BRAND }}>${totalPrice.toFixed(2)}</span>
+                  <span style={{ fontSize: '15px', fontWeight: 700, color: BRAND }}>${finalTotal.toFixed(2)}</span>
                 </div>
               </div>
 

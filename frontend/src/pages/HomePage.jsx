@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 import { slidersApi, categoriesApi, productsApi, getImageUrl } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -80,39 +81,116 @@ export default function HomePage() {
     <div className="bg-white">
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
+      <style>{`
+        .hero-swiper { width: 100%; display: block; }
+        .hero-swiper .swiper-button-prev,
+        .hero-swiper .swiper-button-next {
+          width: 44px; height: 44px;
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.3);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border-radius: 0;
+          color: #fff;
+          transition: background 0.2s;
+          top: 50%;
+        }
+        .hero-swiper .swiper-button-prev { left: 20px; }
+        .hero-swiper .swiper-button-next { right: 20px; }
+        .hero-swiper .swiper-button-prev:hover,
+        .hero-swiper .swiper-button-next:hover {
+          background: rgba(255,255,255,0.25);
+        }
+        .hero-swiper .swiper-button-prev::after,
+        .hero-swiper .swiper-button-next::after {
+          font-size: 14px; font-weight: 900;
+        }
+        .hero-swiper .swiper-pagination {
+          bottom: 18px;
+          display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .hero-swiper .swiper-pagination-bullet {
+          width: 24px; height: 2px; border-radius: 0;
+          background: rgba(255,255,255,0.4);
+          opacity: 1; margin: 0;
+          transition: width 0.4s ease, background 0.4s ease;
+        }
+        .hero-swiper .swiper-pagination-bullet-active {
+          width: 48px; background: #fff;
+        }
+        @media (max-width: 640px) {
+          .hero-swiper .swiper-button-prev,
+          .hero-swiper .swiper-button-next { display: none; }
+        }
+      `}</style>
+
       {slides.length > 0 ? (
         <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
+          modules={[Navigation, Pagination, Autoplay, EffectFade]}
+          effect="fade"
+          fadeEffect={{ crossFade: true }}
           navigation
           pagination={{ clickable: true }}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          autoplay={{ delay: 5500, disableOnInteraction: false }}
           loop={slides.length > 1}
-          className="w-full"
+          autoHeight
+          className="hero-swiper"
         >
           {slides.map(slide => (
             <SwiperSlide key={slide.id}>
-              <div className="relative bg-stone-100 w-full flex items-center justify-center" style={{ minHeight: '320px', maxHeight: '85vh' }}>
+              <div style={{ position: 'relative', width: '100%', lineHeight: 0 }}>
+                {/* Image at full natural proportions — zero cropping */}
                 <img
                   src={getImageUrl(slide.image_url)}
                   alt={slide.caption || 'Slide'}
-                  className="w-full"
-                  style={{ maxHeight: '85vh', objectFit: 'contain', display: 'block' }}
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
                 />
+                {/* Subtle vignette so caption stays readable */}
                 {(slide.caption || slide.link) && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 sm:pb-14 px-4 text-center"
-                    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)' }}
-                  >
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    height: '45%',
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)',
+                    pointerEvents: 'none',
+                  }} />
+                )}
+                {/* Caption + CTA */}
+                {(slide.caption || slide.link) && (
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    padding: '0 clamp(16px, 5vw, 64px) clamp(32px, 5vh, 60px)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+                  }}>
                     {slide.caption && (
-                      <h2 className="font-display text-white font-bold mb-5 drop-shadow"
-                        style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)', letterSpacing: '0.06em' }}>
+                      <h2
+                        className="font-display text-white font-bold"
+                        style={{
+                          fontSize: 'clamp(1.3rem, 3.5vw, 2.8rem)',
+                          letterSpacing: '0.07em',
+                          marginBottom: '18px',
+                          textShadow: '0 2px 20px rgba(0,0,0,0.55)',
+                          lineHeight: 1.2,
+                        }}
+                      >
                         {slide.caption}
                       </h2>
                     )}
                     {slide.link && (
                       <Link
                         to={slide.link}
-                        className="border border-white text-white hover:bg-white hover:text-stone-900 transition-colors"
-                        style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 500, padding: '10px 32px' }}
+                        style={{
+                          display: 'inline-block',
+                          border: '1px solid rgba(255,255,255,0.75)',
+                          color: '#fff',
+                          fontSize: '10px',
+                          letterSpacing: '0.24em',
+                          textTransform: 'uppercase',
+                          fontWeight: 600,
+                          padding: '12px 38px',
+                          background: 'rgba(255,255,255,0.1)',
+                          backdropFilter: 'blur(6px)',
+                          WebkitBackdropFilter: 'blur(6px)',
+                        }}
                       >
                         Shop Now
                       </Link>
@@ -126,18 +204,36 @@ export default function HomePage() {
       ) : (
         <div
           className="relative flex flex-col items-center justify-center text-center px-4"
-          style={{ aspectRatio: '16/6', background: '#f5f0ea' }}
+          style={{
+            height: 'clamp(360px, 68vh, 760px)',
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2520 50%, #1a1a1a 100%)',
+          }}
         >
-          <h1 className="font-display font-bold text-stone-900 mb-4" style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', letterSpacing: '0.06em' }}>
-            Welcome to Brand Bags
+          <div style={{ marginBottom: '16px', height: '1px', width: '48px', background: '#b8966a' }} />
+          <h1
+            className="font-display font-bold text-white mb-5"
+            style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)', letterSpacing: '0.08em' }}
+          >
+            Brand Bags & More
           </h1>
-          <p className="text-stone-500 mb-8" style={{ fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            Discover your next favourite piece
+          <p
+            className="text-stone-400 mb-10"
+            style={{ fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase' }}
+          >
+            Curated fashion for the modern woman
           </p>
           <Link
             to="/categories"
-            className="border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white transition-colors"
-            style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 500, padding: '11px 36px' }}
+            style={{
+              border: '1px solid rgba(184,150,106,0.7)',
+              color: '#b8966a',
+              fontSize: '10px',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              padding: '13px 40px',
+              display: 'inline-block',
+            }}
           >
             Shop Now
           </Link>

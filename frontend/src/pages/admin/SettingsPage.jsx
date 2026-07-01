@@ -5,7 +5,7 @@ import { settingsApi } from '../../services/api';
 import ImageUploadField from '../../components/admin/ImageUploadField';
 
 export default function SettingsPage() {
-  const [form, setForm] = useState({ whatsapp_number: '', instagram_url: '', footer_description: '', notification_emails: '' });
+  const [form, setForm] = useState({ site_title: '', whatsapp_number: '', instagram_url: '', footer_description: '', notification_emails: '' });
   const [logoFile, setLogoFile] = useState(null);
   const [faviconFile, setFaviconFile] = useState(null);
   const [settings, setSettings] = useState(null);
@@ -14,7 +14,7 @@ export default function SettingsPage() {
   useEffect(() => {
     settingsApi.get().then(s => {
       setSettings(s);
-      setForm({ whatsapp_number: s.whatsapp_number || '', instagram_url: s.instagram_url || '', footer_description: s.footer_description || '', notification_emails: s.notification_emails || '' });
+      setForm({ site_title: s.site_title || '', whatsapp_number: s.whatsapp_number || '', instagram_url: s.instagram_url || '', footer_description: s.footer_description || '', notification_emails: s.notification_emails || '' });
     });
   }, []);
 
@@ -93,6 +93,18 @@ export default function SettingsPage() {
             onRemove={handleRemoveFavicon}
             accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/jpeg,image/webp"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-1.5">Browser Tab Title</label>
+          <input
+            type="text"
+            placeholder="e.g. Brand Bags & More"
+            value={form.site_title}
+            onChange={e => setForm(f => ({ ...f, site_title: e.target.value }))}
+            className="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
+          />
+          <p className="text-xs text-stone-400 mt-1">Shown in the browser tab. Updates instantly for all visitors.</p>
         </div>
 
         <div>

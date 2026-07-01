@@ -12,8 +12,9 @@ from .models import AdminUser, SiteSettings  # noqa: F401 — ensures tables are
 from .models import Category, Brand, Collection, Product, ProductImage  # noqa: F401
 from .models import SliderImage, Announcement  # noqa: F401
 from .models import Order, OrderItem  # noqa: F401
+from .models import PromoCode  # noqa: F401
 from .routers import auth, site_settings, categories, brands, collections, products, sliders, announcements
-from .routers import orders
+from .routers import orders, promo_codes
 
 settings = get_settings()
 
@@ -58,6 +59,7 @@ app.include_router(products.router)
 app.include_router(sliders.router)
 app.include_router(announcements.router)
 app.include_router(orders.router)
+app.include_router(promo_codes.router)
 
 
 # ── Startup: create tables + seed admin ──────────────────────────────────────
@@ -89,6 +91,18 @@ def _migrate(engine):
             conn.commit()
         if "notification_emails" not in ss_cols:
             conn.execute(text("ALTER TABLE site_settings ADD COLUMN notification_emails VARCHAR"))
+            conn.commit()
+        if "site_title" not in ss_cols:
+            conn.execute(text("ALTER TABLE site_settings ADD COLUMN site_title VARCHAR"))
+            conn.commit()
+
+        # orders: promo code columns
+        order_cols = {c["name"] for c in inspector.get_columns("orders")}
+        if "promo_code" not in order_cols:
+            conn.execute(text("ALTER TABLE orders ADD COLUMN promo_code VARCHAR"))
+            conn.commit()
+        if "discount_amount" not in order_cols:
+            conn.execute(text("ALTER TABLE orders ADD COLUMN discount_amount FLOAT DEFAULT 0"))
             conn.commit()
 
 

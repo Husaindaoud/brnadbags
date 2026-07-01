@@ -129,11 +129,6 @@ export default function ProductCard({ product }) {
               <span className="text-stone-400 line-through" style={{ fontSize: '10px' }}>${product.price.toFixed(2)}</span>
             )}
           </div>
-          {!product.is_sold_out && product.quantity <= 5 && (
-            <p className="mt-0.5 text-amber-600" style={{ fontSize: '9px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Only {product.quantity} left
-            </p>
-          )}
         </div>
       </Link>
     </div>

@@ -24,6 +24,7 @@ class OrderCreate(BaseModel):
     email: Optional[str] = None
     order_notes: Optional[str] = None
     items: List[OrderItemCreate]
+    promo_code: Optional[str] = None
 
 
 class OrderStatusUpdate(BaseModel):
@@ -58,6 +59,8 @@ class OrderOut(BaseModel):
     email: Optional[str]
     order_notes: Optional[str]
     subtotal: float
+    discount_amount: Optional[float] = 0.0
+    promo_code: Optional[str] = None
     total: float
     created_at: datetime
     items: List[OrderItemOut]

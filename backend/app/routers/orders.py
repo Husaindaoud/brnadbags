@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import datetime
 
 from ..core.database import get_db
 from ..core.security import get_current_admin
 from ..core.email import send_order_notification
 from ..models.order import Order, OrderItem, _gen_ref
 from ..models.product import Product
+from ..models.promo_code import PromoCode
 from ..models.site_settings import SiteSettings
 from ..schemas.order import OrderCreate, OrderOut, OrderStatusUpdate
 
@@ -28,6 +30,22 @@ def _adjust_stock(db: Session, items, delta: int):
 @router.post('', response_model=OrderOut, status_code=201)
 def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
     subtotal = sum(i.price * i.quantity for i in payload.items)
+
+    # Apply promo code if provided
+    discount_amount = 0.0
+    applied_code = None
+    used_promo_obj = None
+    if payload.promo_code:
+        code_str = payload.promo_code.strip().upper()
+        pc = db.query(PromoCode).filter(PromoCode.code == code_str).first()
+        if pc and pc.is_active:
+            expired = pc.expires_at and pc.expires_at < datetime.utcnow()
+            over_limit = pc.max_uses is not None and pc.uses_count >= pc.max_uses
+            if not expired and not over_limit:
+                discount_amount = round(subtotal * pc.discount_percent / 100, 2)
+                applied_code = code_str
+                used_promo_obj = pc
+
     order_ref = _gen_ref()
     while db.query(Order).filter(Order.order_ref == order_ref).first():
         order_ref = _gen_ref()
@@ -46,7 +64,9 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
         email=payload.email,
         order_notes=payload.order_notes,
         subtotal=subtotal,
-        total=subtotal,
+        discount_amount=discount_amount,
+        promo_code=applied_code,
+        total=round(subtotal - discount_amount, 2),
     )
     db.add(order)
     db.flush()
@@ -66,6 +86,10 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
 
     # Decrement stock for each item
     _adjust_stock(db, payload.items, delta=-1)
+
+    # Increment promo code usage counter
+    if used_promo_obj:
+        used_promo_obj.uses_count += 1
 
     db.commit()
     db.refresh(order)

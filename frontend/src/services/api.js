@@ -122,6 +122,17 @@ export const ordersApi = {
   updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }).then(r => r.data),
 };
 
+export const promoApi = {
+  validate: (code) => api.get('/promo/validate', { params: { code } }).then(r => r.data),
+};
+
+export const promoCodesApi = {
+  list: () => api.get('/promo-codes').then(r => r.data),
+  create: (data) => api.post('/promo-codes', data).then(r => r.data),
+  update: (id, data) => api.put(`/promo-codes/${id}`, data).then(r => r.data),
+  delete: (id) => api.delete(`/promo-codes/${id}`),
+};
+
 export const authApi = {
   login: (username, password) =>
     api.post('/auth/login', { username, password }).then(r => r.data),

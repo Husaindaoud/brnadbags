@@ -32,6 +32,7 @@ import ProductFormPage from './pages/admin/ProductFormPage';
 import SlidersPage from './pages/admin/SlidersPage';
 import AnnouncementsPage from './pages/admin/AnnouncementsPage';
 import OrdersAdminPage from './pages/admin/OrdersPage';
+import PromoCodesPage from './pages/admin/PromoCodesPage';
 
 export default function App() {
   return (
@@ -71,6 +72,7 @@ export default function App() {
                 <Route path="sliders" element={<SlidersPage />} />
                 <Route path="announcements" element={<AnnouncementsPage />} />
                 <Route path="orders" element={<OrdersAdminPage />} />
+                <Route path="promo-codes" element={<PromoCodesPage />} />
               </Route>
             </Routes>
           </CartProvider>
