@@ -65,7 +65,7 @@ export default function HomePage() {
       productsApi.list({ on_sale: true, limit: 8 }),
     ]).then(([s, c, np, sp]) => {
       setSlides(s);
-      setCategories(c);
+      setCategories(c.filter(cat => cat.parent_id == null && cat.slug));
       setNewProducts(np);
       setSaleProducts(sp);
     }).finally(() => setLoading(false));
