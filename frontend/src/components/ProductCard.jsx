@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingBag, FiCheck } from 'react-icons/fi';
 import { getImageUrl } from '../services/api';
 import { useCart } from '../context/CartContext';
@@ -6,14 +6,20 @@ import toast from 'react-hot-toast';
 
 export default function ProductCard({ product }) {
   const { addItem, isInCart } = useCart();
+  const navigate = useNavigate();
+  const hasSizes = product.sizes?.length > 0;
   const inCart = isInCart(product.id);
 
   const handleAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (product.is_sold_out) return;
+    if (hasSizes) {
+      navigate(`/products/${product.id}`);
+      return;
+    }
     addItem(product, 1);
-    toast.success(`${product.name} added to inquiry`);
+    toast.success(`${product.name} added to bag`);
   };
 
   const imageUrl = getImageUrl(product.primary_image_url);
@@ -104,7 +110,7 @@ export default function ProductCard({ product }) {
                   padding: '11px 0',
                 }}
               >
-                {inCart ? <><FiCheck size={11} /> In Inquiry</> : <><FiShoppingBag size={11} /> Add to Inquiry</>}
+                {hasSizes ? 'Select Size' : inCart ? <><FiCheck size={11} /> In Bag</> : <><FiShoppingBag size={11} /> Add to Bag</>}
               </button>
             </div>
           )}

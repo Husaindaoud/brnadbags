@@ -5,37 +5,38 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('inquiry_cart') || '[]');
+      return JSON.parse(localStorage.getItem('bag_cart') || '[]');
     } catch {
       return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem('inquiry_cart', JSON.stringify(items));
+    localStorage.setItem('bag_cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product, qty = 1) => {
+  // size is optional — products without sizes pass null/undefined
+  const addItem = (product, qty = 1, size = null) => {
     setItems(prev => {
-      const existing = prev.find(i => i.product.id === product.id);
+      const existing = prev.find(i => i.product.id === product.id && i.size === size);
       if (existing) {
         return prev.map(i =>
-          i.product.id === product.id
+          i.product.id === product.id && i.size === size
             ? { ...i, quantity: i.quantity + qty }
             : i
         );
       }
-      return [...prev, { product, quantity: qty }];
+      return [...prev, { product, quantity: qty, size }];
     });
   };
 
-  const removeItem = (productId) =>
-    setItems(prev => prev.filter(i => i.product.id !== productId));
+  const removeItem = (productId, size = null) =>
+    setItems(prev => prev.filter(i => !(i.product.id === productId && i.size === size)));
 
-  const updateQuantity = (productId, qty) => {
-    if (qty <= 0) { removeItem(productId); return; }
+  const updateQuantity = (productId, qty, size = null) => {
+    if (qty <= 0) { removeItem(productId, size); return; }
     setItems(prev =>
-      prev.map(i => i.product.id === productId ? { ...i, quantity: qty } : i)
+      prev.map(i => i.product.id === productId && i.size === size ? { ...i, quantity: qty } : i)
     );
   };
 
@@ -44,10 +45,15 @@ export function CartProvider({ children }) {
   const totalItems = items.reduce((s, i) => s + i.quantity, 0);
   const totalPrice = items.reduce((s, i) => s + i.product.final_price * i.quantity, 0);
 
-  const isInCart = (productId) => items.some(i => i.product.id === productId);
+  // isInCart: pass size to check a specific size, omit to check any size
+  const isInCart = (productId, size = undefined) =>
+    items.some(i => i.product.id === productId && (size === undefined || i.size === size));
+
+  const getCartItem = (productId, size = null) =>
+    items.find(i => i.product.id === productId && i.size === size);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice, isInCart }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice, isInCart, getCartItem }}>
       {children}
     </CartContext.Provider>
   );

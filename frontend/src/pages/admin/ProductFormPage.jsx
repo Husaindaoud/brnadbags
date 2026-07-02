@@ -1,16 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiUpload, FiTrash2, FiStar, FiChevronLeft } from 'react-icons/fi';
+import { FiUpload, FiTrash2, FiStar, FiChevronLeft, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { productsApi, categoriesApi, brandsApi, collectionsApi } from '../../services/api';
 import { getImageUrl } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
+const PRESET_SIZES = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
+
 const emptyForm = {
   name: '', description: '', price: '', discount_percent: '',
   quantity: 0, is_active: true,
   category_id: '', subcategory_id: '', brand_id: '', collection_id: '',
+  sizes: [],
 };
 
 export default function ProductFormPage() {
@@ -51,6 +54,7 @@ export default function ProductFormPage() {
           subcategory_id: prod.subcategory?.id || '',
           brand_id: prod.brand?.id || '',
           collection_id: prod.collection?.id || '',
+          sizes: prod.sizes || [],
         });
       }
     }).catch(() => toast.error('Failed to load data'))
@@ -74,6 +78,7 @@ export default function ProductFormPage() {
         subcategory_id: form.subcategory_id || null,
         brand_id: form.brand_id || null,
         collection_id: form.collection_id || null,
+        sizes: form.sizes.length > 0 ? form.sizes : null,
       };
       if (isEdit) {
         const updated = await productsApi.update(id, payload);
@@ -228,6 +233,85 @@ export default function ProductFormPage() {
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Sizes */}
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-stone-800 text-sm">Sizes</h2>
+              {form.sizes.length > 0 && (
+                <button type="button" onClick={() => setField('sizes', [])}
+                  className="text-xs text-stone-400 hover:text-red-500 transition-colors">
+                  Clear all
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-stone-400">Click sizes to toggle. Leave empty if this product has no size options.</p>
+            {/* Preset EU sizes */}
+            <div className="flex flex-wrap gap-2">
+              {PRESET_SIZES.map(size => {
+                const active = form.sizes.includes(size);
+                return (
+                  <button key={size} type="button"
+                    onClick={() => setField('sizes', active
+                      ? form.sizes.filter(s => s !== size)
+                      : [...form.sizes, size].sort((a, b) => Number(a) - Number(b))
+                    )}
+                    className={`w-12 h-10 text-sm font-semibold rounded-xl border-2 transition-all ${
+                      active
+                        ? 'bg-stone-900 border-stone-900 text-white'
+                        : 'bg-white border-stone-200 text-stone-600 hover:border-stone-400'
+                    }`}>
+                    {size}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Custom size input */}
+            <div className="flex gap-2">
+              <input
+                id="custom-size-input"
+                type="text"
+                placeholder="Custom size (e.g. XL, 10.5)…"
+                className="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = e.target.value.trim();
+                    if (val && !form.sizes.includes(val)) {
+                      setField('sizes', [...form.sizes, val]);
+                    }
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <button type="button"
+                onClick={() => {
+                  const input = document.getElementById('custom-size-input');
+                  const val = input.value.trim();
+                  if (val && !form.sizes.includes(val)) {
+                    setField('sizes', [...form.sizes, val]);
+                  }
+                  input.value = '';
+                }}
+                className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-semibold rounded-xl transition-colors">
+                Add
+              </button>
+            </div>
+            {/* Selected custom sizes (non-preset) */}
+            {form.sizes.filter(s => !PRESET_SIZES.includes(s)).length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {form.sizes.filter(s => !PRESET_SIZES.includes(s)).map(s => (
+                  <span key={s} className="flex items-center gap-1 px-3 py-1 bg-stone-900 text-white text-xs font-semibold rounded-full">
+                    {s}
+                    <button type="button" onClick={() => setField('sizes', form.sizes.filter(x => x !== s))}
+                      className="ml-1 hover:text-red-300 transition-colors">
+                      <FiX size={11} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Visibility toggle + Save */}

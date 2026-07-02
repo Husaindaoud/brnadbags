@@ -111,10 +111,13 @@ def _migrate(engine):
             conn.execute(text("ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(id)"))
             conn.commit()
 
-        # products: subcategory_id
+        # products: subcategory_id + sizes
         prod_cols = {c["name"] for c in inspector.get_columns("products")}
         if "subcategory_id" not in prod_cols:
             conn.execute(text("ALTER TABLE products ADD COLUMN subcategory_id INTEGER REFERENCES categories(id)"))
+            conn.commit()
+        if "sizes" not in prod_cols:
+            conn.execute(text("ALTER TABLE products ADD COLUMN sizes JSONB"))
             conn.commit()
 
 

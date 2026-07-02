@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from ..core.database import Base
 
@@ -14,6 +14,7 @@ class Product(Base):
     quantity = Column(Integer, default=0)
     is_sold_out = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    sizes = Column(JSON, nullable=True)
 
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     subcategory_id = Column(Integer, ForeignKey("categories.id"), nullable=True)

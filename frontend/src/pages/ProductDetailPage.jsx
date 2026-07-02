@@ -10,12 +10,16 @@ import { useCart } from '../context/CartContext';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const { addItem, isInCart, items, updateQuantity } = useCart();
+  const { addItem, isInCart, getCartItem } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [sizeError, setSizeError] = useState(false);
 
   useEffect(() => {
+    setSelectedSize(null);
+    setSizeError(false);
     productsApi.get(id).then(setProduct).finally(() => setLoading(false));
   }, [id]);
 
@@ -27,14 +31,20 @@ export default function ProductDetailPage() {
     </div>
   );
 
+  const hasSizes = product.sizes?.length > 0;
   const hasDiscount = product.discount_percent && product.discount_percent > 0;
-  const inCart = isInCart(product.id);
-  const cartItem = items.find(i => i.product.id === product.id);
+  const inCart = isInCart(product.id, hasSizes ? selectedSize : undefined);
+  const cartItem = getCartItem(product.id, hasSizes ? selectedSize : null);
 
   const handleAdd = () => {
     if (product.is_sold_out) return;
-    addItem(product, qty);
-    toast.success(`${product.name} added to inquiry!`);
+    if (hasSizes && !selectedSize) {
+      setSizeError(true);
+      setTimeout(() => setSizeError(false), 2000);
+      return;
+    }
+    addItem(product, qty, hasSizes ? selectedSize : null);
+    toast.success(`${product.name}${selectedSize ? ` (Size ${selectedSize})` : ''} added to bag!`);
   };
 
   return (
@@ -124,6 +134,42 @@ export default function ProductDetailPage() {
             )}
           </div>
 
+          {/* Size selector */}
+          {hasSizes && !product.is_sold_out && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-stone-700">Size</span>
+                {selectedSize && (
+                  <span className="text-xs text-stone-400">Selected: <strong className="text-stone-700">{selectedSize}</strong></span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes.map(size => (
+                  <button
+                    key={size}
+                    onClick={() => { setSelectedSize(size); setSizeError(false); }}
+                    className={`min-w-[48px] h-11 px-3 text-sm font-semibold rounded-xl border-2 transition-all ${
+                      selectedSize === size
+                        ? 'bg-stone-900 border-stone-900 text-white scale-105'
+                        : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+              {sizeError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-rose-500 mt-2 font-medium"
+                >
+                  Please select a size before adding to bag
+                </motion.p>
+              )}
+            </div>
+          )}
+
           {/* Qty selector + Add button */}
           {!product.is_sold_out && (
             <div className="flex flex-col gap-3">
@@ -148,20 +194,24 @@ export default function ProductDetailPage() {
                 className={`w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
                   inCart
                     ? 'bg-stone-900 text-white hover:bg-stone-800'
+                    : sizeError
+                    ? 'bg-rose-100 text-rose-600 border-2 border-rose-300'
                     : 'bg-rose-500 text-white hover:bg-rose-600'
                 }`}
               >
                 {inCart ? (
-                  <><FiCheck size={16} /> In Inquiry Cart ({cartItem?.quantity})</>
+                  <><FiCheck size={16} /> In Bag ({cartItem?.quantity})</>
+                ) : hasSizes && !selectedSize ? (
+                  <><FiShoppingBag size={16} /> Select a Size</>
                 ) : (
-                  <><FiShoppingBag size={16} /> Add to Inquiry</>
+                  <><FiShoppingBag size={16} /> Add to Bag</>
                 )}
               </motion.button>
 
               {inCart && (
                 <Link to="/cart"
                   className="w-full py-3 rounded-2xl text-sm font-semibold border border-stone-200 text-stone-700 hover:border-rose-300 hover:text-rose-500 transition-colors text-center">
-                  View Inquiry Cart →
+                  View Bag →
                 </Link>
               )}
             </div>

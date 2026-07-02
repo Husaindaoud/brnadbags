@@ -48,6 +48,7 @@ class ProductCreate(BaseModel):
     subcategory_id: Optional[int] = None
     brand_id: Optional[int] = None
     collection_id: Optional[int] = None
+    sizes: Optional[List[str]] = None
 
     @field_validator("discount_percent")
     @classmethod
@@ -75,6 +76,7 @@ class ProductUpdate(BaseModel):
     subcategory_id: Optional[int] = None
     brand_id: Optional[int] = None
     collection_id: Optional[int] = None
+    sizes: Optional[List[str]] = None
 
 
 class ProductOut(BaseModel):
@@ -88,6 +90,7 @@ class ProductOut(BaseModel):
     is_sold_out: bool
     is_active: bool
     primary_image_url: Optional[str] = None
+    sizes: Optional[List[str]] = None
     category: Optional[CategoryShort] = None
     subcategory: Optional[CategoryShort] = None
     brand: Optional[BrandShort] = None
