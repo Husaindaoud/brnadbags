@@ -12,7 +12,7 @@ export default function AllCategoriesPage() {
 
   useEffect(() => {
     categoriesApi.list()
-      .then(cats => setCategories(cats.filter(c => c.parent_id == null)))
+      .then(cats => setCategories(cats.filter(c => c.parent_id == null && c.slug)))
       .finally(() => setLoading(false));
   }, []);
 
