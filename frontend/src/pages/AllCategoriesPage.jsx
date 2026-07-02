@@ -11,7 +11,9 @@ export default function AllCategoriesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    categoriesApi.list().then(setCategories).finally(() => setLoading(false));
+    categoriesApi.list()
+      .then(cats => setCategories(cats.filter(c => c.parent_id == null)))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
