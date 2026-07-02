@@ -105,6 +105,18 @@ def _migrate(engine):
             conn.execute(text("ALTER TABLE orders ADD COLUMN discount_amount FLOAT DEFAULT 0"))
             conn.commit()
 
+        # categories: parent_id for subcategory support
+        cat_cols = {c["name"] for c in inspector.get_columns("categories")}
+        if "parent_id" not in cat_cols:
+            conn.execute(text("ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(id)"))
+            conn.commit()
+
+        # products: subcategory_id
+        prod_cols = {c["name"] for c in inspector.get_columns("products")}
+        if "subcategory_id" not in prod_cols:
+            conn.execute(text("ALTER TABLE products ADD COLUMN subcategory_id INTEGER REFERENCES categories(id)"))
+            conn.commit()
+
 
 def _seed(db: Session):
     try:

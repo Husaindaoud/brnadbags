@@ -10,7 +10,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 const emptyForm = {
   name: '', description: '', price: '', discount_percent: '',
   quantity: 0, is_active: true,
-  category_id: '', brand_id: '', collection_id: '',
+  category_id: '', subcategory_id: '', brand_id: '', collection_id: '',
 };
 
 export default function ProductFormPage() {
@@ -48,6 +48,7 @@ export default function ProductFormPage() {
           quantity: prod.quantity,
           is_active: prod.is_active,
           category_id: prod.category?.id || '',
+          subcategory_id: prod.subcategory?.id || '',
           brand_id: prod.brand?.id || '',
           collection_id: prod.collection?.id || '',
         });
@@ -70,6 +71,7 @@ export default function ProductFormPage() {
         quantity: Number(form.quantity),
         is_active: form.is_active,
         category_id: form.category_id || null,
+        subcategory_id: form.subcategory_id || null,
         brand_id: form.brand_id || null,
         collection_id: form.collection_id || null,
       };
@@ -188,12 +190,27 @@ export default function ProductFormPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-stone-600 mb-1.5">Category</label>
-                <select value={form.category_id} onChange={e => setField('category_id', e.target.value)}
+                <select value={form.category_id}
+                  onChange={e => { setField('category_id', e.target.value); setField('subcategory_id', ''); }}
                   className="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300">
                   <option value="">None</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories.filter(c => c.parent_id == null).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
+              {(() => {
+                const subcats = categories.filter(c => String(c.parent_id) === String(form.category_id) && form.category_id !== '');
+                if (!subcats.length) return null;
+                return (
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-600 mb-1.5">Subcategory</label>
+                    <select value={form.subcategory_id} onChange={e => setField('subcategory_id', e.target.value)}
+                      className="w-full px-3 py-2.5 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300">
+                      <option value="">None</option>
+                      {subcats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                );
+              })()}
               <div>
                 <label className="block text-xs font-semibold text-stone-600 mb-1.5">Brand</label>
                 <select value={form.brand_id} onChange={e => setField('brand_id', e.target.value)}

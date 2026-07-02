@@ -24,6 +24,7 @@ def _load_product(db: Session, product_id: int) -> Product:
         db.query(Product)
         .options(
             joinedload(Product.category),
+            joinedload(Product.subcategory),
             joinedload(Product.brand),
             joinedload(Product.collection),
             joinedload(Product.images),
@@ -42,6 +43,7 @@ def _load_product(db: Session, product_id: int) -> Product:
 def list_products(
     db: Session = Depends(get_db),
     category_id: Optional[int] = Query(None),
+    subcategory_id: Optional[int] = Query(None),
     brand_id: Optional[int] = Query(None),
     collection_id: Optional[int] = Query(None),
     on_sale: Optional[bool] = Query(None),
@@ -58,6 +60,7 @@ def list_products(
         db.query(Product)
         .options(
             joinedload(Product.category),
+            joinedload(Product.subcategory),
             joinedload(Product.brand),
             joinedload(Product.collection),
             joinedload(Product.images),
@@ -69,6 +72,8 @@ def list_products(
 
     if category_id is not None:
         q = q.filter(Product.category_id == category_id)
+    if subcategory_id is not None:
+        q = q.filter(Product.subcategory_id == subcategory_id)
     if brand_id is not None:
         q = q.filter(Product.brand_id == brand_id)
     if collection_id is not None:

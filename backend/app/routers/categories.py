@@ -33,7 +33,7 @@ def create_category(
     slug = payload.slug or slugify(payload.name)
     if db.query(Category).filter(Category.slug == slug).first():
         raise HTTPException(status_code=400, detail="Category with this slug already exists")
-    cat = Category(name=payload.name, slug=slug, image_url=payload.image_url)
+    cat = Category(name=payload.name, slug=slug, image_url=payload.image_url, parent_id=payload.parent_id)
     db.add(cat)
     db.commit()
     db.refresh(cat)

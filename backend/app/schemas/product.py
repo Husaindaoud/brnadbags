@@ -15,6 +15,7 @@ class CategoryShort(BaseModel):
     id: int
     name: str
     slug: str
+    parent_id: Optional[int] = None
 
     model_config = {"from_attributes": True}
 
@@ -44,6 +45,7 @@ class ProductCreate(BaseModel):
     quantity: int = 0
     is_active: bool = True
     category_id: Optional[int] = None
+    subcategory_id: Optional[int] = None
     brand_id: Optional[int] = None
     collection_id: Optional[int] = None
 
@@ -70,6 +72,7 @@ class ProductUpdate(BaseModel):
     quantity: Optional[int] = None
     is_active: Optional[bool] = None
     category_id: Optional[int] = None
+    subcategory_id: Optional[int] = None
     brand_id: Optional[int] = None
     collection_id: Optional[int] = None
 
@@ -86,6 +89,7 @@ class ProductOut(BaseModel):
     is_active: bool
     primary_image_url: Optional[str] = None
     category: Optional[CategoryShort] = None
+    subcategory: Optional[CategoryShort] = None
     brand: Optional[BrandShort] = None
     collection: Optional[CollectionShort] = None
     images: List[ProductImageOut] = []

@@ -16,17 +16,21 @@ export default function CategoryPage() {
   const [loadingCat, setLoadingCat] = useState(true);
   const [loadingProds, setLoadingProds] = useState(false);
   const [filters, setFilters] = useState({});
+  const [activeSubcat, setActiveSubcat] = useState(null); // null = All
 
   // Resolve category from slug
   useEffect(() => {
     setLoadingCat(true);
     setNotFound(false);
+    setActiveSubcat(null);
     Promise.all([categoriesApi.list(), brandsApi.list()])
       .then(([cats, brs]) => {
         setBrands(brs);
         const cat = cats.find(c => c.slug === slug);
         if (cat) {
-          setCategory(cat);
+          // Attach flat subcats from the full list (in case the nested rel is sparse)
+          const subcats = cats.filter(c => c.parent_id === cat.id);
+          setCategory({ ...cat, subcategories: subcats });
         } else {
           setNotFound(true);
         }
@@ -38,10 +42,12 @@ export default function CategoryPage() {
   const fetchProducts = useCallback(() => {
     if (!category) return;
     setLoadingProds(true);
-    productsApi.list({ ...filters, category_id: category.id })
+    const params = { ...filters, category_id: category.id };
+    if (activeSubcat) params.subcategory_id = activeSubcat.id;
+    productsApi.list(params)
       .then(setProducts)
       .finally(() => setLoadingProds(false));
-  }, [category, filters]);
+  }, [category, filters, activeSubcat]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
@@ -58,6 +64,8 @@ export default function CategoryPage() {
     </div>
   );
 
+  const subcats = category.subcategories || [];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Breadcrumb */}
@@ -72,10 +80,39 @@ export default function CategoryPage() {
       <motion.h1
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-display text-3xl sm:text-4xl font-bold text-stone-900 mb-8"
+        className="font-display text-3xl sm:text-4xl font-bold text-stone-900 mb-6"
       >
         {category.name}
       </motion.h1>
+
+      {/* Subcategory tabs */}
+      {subcats.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            onClick={() => setActiveSubcat(null)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+              activeSubcat === null
+                ? 'bg-stone-900 text-white border-stone-900'
+                : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
+            }`}
+          >
+            All
+          </button>
+          {subcats.map(sub => (
+            <button
+              key={sub.id}
+              onClick={() => setActiveSubcat(sub)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                activeSubcat?.id === sub.id
+                  ? 'bg-stone-900 text-white border-stone-900'
+                  : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
+              }`}
+            >
+              {sub.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <FilterBar filters={filters} onChange={setFilters} brands={brands} />
 

@@ -16,10 +16,12 @@ class Product(Base):
     is_active = Column(Boolean, default=True)
 
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    subcategory_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     brand_id = Column(Integer, ForeignKey("brands.id"), nullable=True)
     collection_id = Column(Integer, ForeignKey("collections.id"), nullable=True)
 
-    category = relationship("Category", back_populates="products")
+    category = relationship("Category", foreign_keys=[category_id], back_populates="products")
+    subcategory = relationship("Category", foreign_keys=[subcategory_id])
     brand = relationship("Brand", back_populates="products")
     collection = relationship("Collection", back_populates="products")
     images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
