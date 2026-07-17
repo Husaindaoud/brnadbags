@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiGrid, FiSettings, FiTag, FiPackage, FiImage,
-  FiBell, FiLayers, FiShoppingBag, FiX, FiAward, FiPercent
+  FiBell, FiLayers, FiShoppingBag, FiX, FiAward, FiPercent, FiBarChart2, FiFileText
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getImageUrl } from '../../services/api';
@@ -19,6 +19,8 @@ const links = [
   { to: '/admin/sliders', label: 'Slider Images', icon: FiImage },
   { to: '/admin/announcements', label: 'Announcements', icon: FiBell },
   { to: '/admin/promo-codes', label: 'Promo Codes', icon: FiPercent },
+  { to: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
+  { to: '/admin/reports',   label: 'Reports',   icon: FiFileText },
 ];
 
 function SidebarContent({ onClose }) {

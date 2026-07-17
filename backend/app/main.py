@@ -7,7 +7,7 @@ from sqlalchemy import inspect, text
 
 from .core.database import engine, Base, SessionLocal
 from .core.config import get_settings
-from .core.security import hash_password
+from .core.security import hash_password, verify_password
 from .models import AdminUser, SiteSettings  # noqa: F401 — ensures tables are created
 from .models import Category, Brand, Collection, Product, ProductImage  # noqa: F401
 from .models import SliderImage, Announcement  # noqa: F401
@@ -15,6 +15,7 @@ from .models import Order, OrderItem  # noqa: F401
 from .models import PromoCode  # noqa: F401
 from .routers import auth, site_settings, categories, brands, collections, products, sliders, announcements
 from .routers import orders, promo_codes
+from .routers import analytics, reports
 
 settings = get_settings()
 
@@ -35,8 +36,11 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
+        "http://localhost:5176",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
+        "http://127.0.0.1:5176",
     ],
     allow_origin_regex=r"https://(brnadbags.*\.vercel\.app|brandbagsandmore\.com|www\.brandbagsandmore\.com)",
     allow_credentials=True,
@@ -60,6 +64,8 @@ app.include_router(sliders.router)
 app.include_router(announcements.router)
 app.include_router(orders.router)
 app.include_router(promo_codes.router)
+app.include_router(analytics.router)
+app.include_router(reports.router)
 
 
 # ── Startup: create tables + seed admin ──────────────────────────────────────
@@ -123,16 +129,26 @@ def _migrate(engine):
 
 def _seed(db: Session):
     try:
-        # Seed admin user
-        existing = db.query(AdminUser).filter(AdminUser.username == settings.admin_username).first()
+        # Seed / sync admin user — always reflects the current env vars
+        existing = db.query(AdminUser).first()
         if not existing:
-            admin = AdminUser(
+            db.add(AdminUser(
                 username=settings.admin_username,
                 hashed_password=hash_password(settings.admin_password),
-            )
-            db.add(admin)
+            ))
             db.commit()
             print(f"[seed] Admin user '{settings.admin_username}' created.")
+        else:
+            changed = False
+            if existing.username != settings.admin_username:
+                existing.username = settings.admin_username
+                changed = True
+            if not verify_password(settings.admin_password, existing.hashed_password):
+                existing.hashed_password = hash_password(settings.admin_password)
+                changed = True
+            if changed:
+                db.commit()
+                print(f"[seed] Admin credentials updated.")
 
         # Seed default site settings row
         if not db.query(SiteSettings).first():

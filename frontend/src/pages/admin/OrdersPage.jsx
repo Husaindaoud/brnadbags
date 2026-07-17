@@ -106,17 +106,23 @@ function OrderRow({ order, onStatusChange }) {
 const tdStyle = { padding: '14px 16px', fontSize: '12px', color: '#374151', verticalAlign: 'middle' };
 const sectionLabel = { fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700, color: '#1a1a1a', marginBottom: '8px' };
 
+const PAGE_SIZE = 10;
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     ordersApi.list()
       .then(setOrders)
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setPage(1); }, [filterStatus, search]);
 
   const handleStatusChange = async (id, status) => {
     const updated = await ordersApi.updateStatus(id, status);
@@ -132,6 +138,9 @@ export default function OrdersPage() {
     }
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div>
@@ -190,24 +199,71 @@ export default function OrdersPage() {
           {search ? `No orders matching "${search}".` : filterStatus ? `No ${filterStatus} orders.` : 'No orders yet.'}
         </div>
       ) : (
-        <div style={{ border: '1px solid #e8e3db', background: '#fff', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #e8e3db', background: '#fafaf8' }}>
-                {['Order Ref', 'Customer', 'Date', 'Status', 'Items', 'Total', 'Update Status'].map(h => (
-                  <th key={h} style={{ padding: '12px 16px', fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, color: '#57534e', textAlign: 'left' }}>
-                    {h}
-                  </th>
+        <>
+          <div style={{ border: '1px solid #e8e3db', background: '#fff', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #e8e3db', background: '#fafaf8' }}>
+                  {['Order Ref', 'Customer', 'Date', 'Status', 'Items', 'Total', 'Update Status'].map(h => (
+                    <th key={h} style={{ padding: '12px 16px', fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, color: '#57534e', textAlign: 'left' }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map(order => (
+                  <OrderRow key={order.id} order={order} onStatusChange={handleStatusChange} />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(order => (
-                <OrderRow key={order.id} order={order} onStatusChange={handleStatusChange} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+              <p style={{ fontSize: '12px', color: '#78716c' }}>
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} orders
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #d6d0c8', background: page === 1 ? '#fafaf8' : '#fff', color: page === 1 ? '#c4b9ad' : '#374151', cursor: page === 1 ? 'default' : 'pointer' }}
+                >
+                  ← Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
+                  .reduce((acc, n, idx, arr) => {
+                    if (idx > 0 && n - arr[idx - 1] > 1) acc.push('…');
+                    acc.push(n);
+                    return acc;
+                  }, [])
+                  .map((n, i) =>
+                    n === '…' ? (
+                      <span key={`ellipsis-${i}`} style={{ padding: '6px 8px', fontSize: '12px', color: '#a8a29e' }}>…</span>
+                    ) : (
+                      <button
+                        key={n}
+                        onClick={() => setPage(n)}
+                        style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid', borderColor: n === page ? BRAND : '#d6d0c8', background: n === page ? BRAND : '#fff', color: n === page ? '#fff' : '#374151', cursor: 'pointer', fontWeight: n === page ? 700 : 400 }}
+                      >
+                        {n}
+                      </button>
+                    )
+                  )}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #d6d0c8', background: page === totalPages ? '#fafaf8' : '#fff', color: page === totalPages ? '#c4b9ad' : '#374151', cursor: page === totalPages ? 'default' : 'pointer' }}
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

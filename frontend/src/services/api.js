@@ -133,6 +133,21 @@ export const promoCodesApi = {
   delete: (id) => api.delete(`/promo-codes/${id}`),
 };
 
+export const reportsApi = {
+  orders:   (start, end) => api.get('/reports/orders',   { params: { start, end } }).then(r => r.data),
+  revenue:  (start, end) => api.get('/reports/revenue',  { params: { start, end } }).then(r => r.data),
+  products: (start, end) => api.get('/reports/products', { params: { start, end } }).then(r => r.data),
+  status:   (start, end) => api.get('/reports/status',   { params: { start, end } }).then(r => r.data),
+};
+
+export const analyticsApi = {
+  summary:   () => api.get('/analytics/summary').then(r => r.data),
+  pageviews: () => api.get('/analytics/pageviews').then(r => r.data),
+  pages:     () => api.get('/analytics/pages').then(r => r.data),
+  referrers: () => api.get('/analytics/referrers').then(r => r.data),
+  devices:   () => api.get('/analytics/devices').then(r => r.data),
+};
+
 export const authApi = {
   login: (username, password) =>
     api.post('/auth/login', { username, password }).then(r => r.data),
