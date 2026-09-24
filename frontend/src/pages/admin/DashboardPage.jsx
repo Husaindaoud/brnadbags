@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiTag, FiAward, FiLayers, FiShoppingBag, FiImage, FiBell, FiSettings } from 'react-icons/fi';
-import { categoriesApi, brandsApi, collectionsApi, productsApi, announcementsApi } from '../../services/api';
+import { categoriesApi, brandsApi, collectionsApi, productsApi, announcementsApi, getImageUrl } from '../../services/api';
 
 function StatCard({ label, value, icon: Icon, to, color }) {
   return (
@@ -94,7 +94,7 @@ export default function DashboardPage() {
                 <div key={p.id} className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-100 shrink-0">
                     {p.primary_image_url && (
-                      <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${p.primary_image_url}`}
+                      <img src={getImageUrl(p.primary_image_url)}
                         alt={p.name} className="w-full h-full object-cover" />
                     )}
                   </div>
