@@ -209,6 +209,7 @@ export default function CheckoutPage() {
             <Field label="Email Address">
               <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
                 style={inputStyle} onFocus={e => e.target.style.borderColor = BRAND} onBlur={e => e.target.style.borderColor = '#d6d0c8'} />
+              <p style={{ fontSize: 12, color: '#a8a29e', marginTop: 6 }}>We'll email your order confirmation here.</p>
             </Field>
 
             <Field label="Order Notes (optional)">

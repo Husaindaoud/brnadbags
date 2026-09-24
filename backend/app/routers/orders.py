@@ -5,7 +5,7 @@ from datetime import datetime
 
 from ..core.database import get_db
 from ..core.security import get_current_admin
-from ..core.email import send_order_notification
+from ..core.email import send_order_notification, send_customer_confirmation
 from ..models.order import Order, OrderItem, _gen_ref
 from ..models.product import Product
 from ..models.promo_code import PromoCode
@@ -97,6 +97,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
     site = db.query(SiteSettings).first()
     if site and site.notification_emails:
         send_order_notification(order, site.notification_emails)
+    send_customer_confirmation(order, site.whatsapp_number if site else "")
 
     return order
 
