@@ -7,6 +7,7 @@ from ..core.security import get_current_admin
 from ..core.utils import save_upload, delete_upload
 from ..models.product import Product, ProductImage
 from ..models.collection import Collection
+from ..models.order import OrderItem
 from ..models.user import AdminUser
 from ..schemas.product import ProductCreate, ProductUpdate, ProductOut, ProductImageOut
 
@@ -153,10 +154,22 @@ def delete_product(
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    for img in product.images:
-        delete_upload(img.image_url)
+
+    # Past orders keep their own copy of name/price/image, so just unlink them;
+    # otherwise Postgres rejects the delete (order_items.product_id FK).
+    ordered = db.query(OrderItem).filter(OrderItem.product_id == product_id)
+    ordered_images = {i.product_image_url for i in ordered if i.product_image_url}
+    ordered.update({OrderItem.product_id: None}, synchronize_session=False)
+
+    image_urls = [img.image_url for img in product.images]
     db.delete(product)
     db.commit()
+
+    # Remove files only after the DB delete succeeded, and keep any image
+    # that past orders still display.
+    for url in image_urls:
+        if url not in ordered_images:
+            delete_upload(url)
 
 
 # ── product images ────────────────────────────────────────────────────────────
